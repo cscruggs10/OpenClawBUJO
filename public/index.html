@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bullet Journal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      color: #333;
+    }
+    
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 {
+      color: #667eea;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .nav-btn {
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 2px solid #667eea;
+      color: #667eea;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      flex: 1;
+      min-width: 100px;
+    }
+    
+    .nav-btn:hover, .nav-btn.active {
+      background: #667eea;
+      color: white;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 1rem auto;
+      padding: 0 1rem;
+    }
+    
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 1rem;
+    }
+    
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    h2 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    
+    h3 {
+      color: #374151;
+      margin: 1rem 0 0.5rem;
+      font-size: 1rem;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 400px;
+      padding: 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+    
+    .btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+    
+    .btn-secondary:hover {
+      background: #f3f4f6;
+    }
+    
+    .date-picker {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .date-picker input {
+      padding: 0.5rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    
+    .date-picker input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    
+    .task-list {
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .task-item {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .task-item.completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #667eea;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6b7280;
+    }
+    
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 640px) {
+      .header h1 {
+        font-size: 1.25rem;
+      }
+      
+      .nav-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        min-width: 80px;
+      }
+      
+      textarea {
+        min-height: 300px;
+        font-size: 0.85rem;
+      }
+      
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📓 Bullet Journal</h1>
+    <div class="nav-buttons">
+      <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('daily')">Daily</button>
+      <button class="nav-btn" onclick="showPage('weekly')">Weekly</button>
+      <button class="nav-btn" onclick="showPage('goals')">Goals</button>
+      <button class="nav-btn" onclick="showPage('habits')">Habits</button>
+      <button class="nav-btn" onclick="showPage('review')">Review</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <div class="card">
+        <h2>📊 Dashboard</h2>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="dash-streak">-</div>
+            <div class="stat-label">Habits Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-week">-</div>
+            <div class="stat-label">Current Week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dash-date">-</div>
+            <div class="stat-label">Today</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3>🎯 Today's Priority</h3>
+        <div id="dash-today" class="task-list">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3>📅 This Week's Priority</h3>
+        <div id="dash-week-tasks" class="task-list">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Tasks Page -->
+    <div id="daily" class="page">
+      <div class="card">
+        <h2>📝 Daily Tasks</h2>
+        <div class="date-picker">
+          <label for="day-date">Date:</label>
+          <input type="date" id="day-date" onchange="loadDay()">
+          <button class="btn btn-secondary" onclick="setToday()">Today</button>
+        </div>
+        <div id="day-alert"></div>
+        <textarea id="day-content" placeholder="Loading..."></textarea>
+        <button class="btn" onclick="saveDay()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- Weekly Planning Page -->
+    <div id="weekly" class="page">
+      <div class="card">
+        <h2>📅 Weekly Planning</h2>
+        <div class="date-picker">
+          <label for="week-select">Week:</label>
+          <input type="text" id="week-select" placeholder="2026-W04" style="width: 120px;">
+          <button class="btn btn-secondary" onclick="setCurrentWeek()">Current Week</button>
+          <button class="btn btn-secondary" onclick="loadWeek()">Load</button>
+        </div>
+        <div id="week-alert"></div>
+        <textarea id="week-content" placeholder="Loading..."></textarea>
+        <button class="btn" onclick="saveWeek()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- Quarterly Goals Page -->
+    <div id="goals" class="page">
+      <div class="card">
+        <h2>🎯 Quarterly Goals</h2>
+        <div class="date-picker">
+          <label for="quarter-select">Quarter:</label>
+          <input type="text" id="quarter-select" placeholder="2026-Q1" style="width: 120px;">
+          <button class="btn btn-secondary" onclick="setCurrentQuarter()">Current Quarter</button>
+          <button class="btn btn-secondary" onclick="loadGoals()">Load</button>
+        </div>
+        <div id="goals-alert"></div>
+        <textarea id="goals-content" placeholder="Loading..."></textarea>
+        <button class="btn" onclick="saveGoals()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- Habits Page -->
+    <div id="habits" class="page">
+      <div class="card">
+        <h2>✅ Habit Tracker</h2>
+        <div id="habits-alert"></div>
+        <textarea id="habits-content" placeholder="Loading..."></textarea>
+        <button class="btn" onclick="saveHabits()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- Weekly Review Page -->
+    <div id="review" class="page">
+      <div class="card">
+        <h2>🔍 Weekly Review</h2>
+        <div class="date-picker">
+          <label for="review-week">Week:</label>
+          <input type="text" id="review-week" placeholder="2026-W04" style="width: 120px;">
+          <button class="btn btn-secondary" onclick="setCurrentWeekReview()">Current Week</button>
+          <button class="btn btn-secondary" onclick="loadReview()">Load</button>
+        </div>
+        <div id="review-alert"></div>
+        <textarea id="review-content" placeholder="Loading..."></textarea>
+        <button class="btn" onclick="saveReview()">💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility: Show page
+    function showPage(pageId) {
+      // Update nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update pages
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      
+      // Load page data
+      switch(pageId) {
+        case 'dashboard': loadDashboard(); break;
+        case 'daily': setToday(); break;
+        case 'weekly': setCurrentWeek(); break;
+        case 'goals': setCurrentQuarter(); break;
+        case 'habits': loadHabits(); break;
+        case 'review': setCurrentWeekReview(); break;
+      }
+    }
+    
+    // Utility: Show alert
+    function showAlert(elementId, message, type = 'success') {
+      const alertEl = document.getElementById(elementId);
+      alertEl.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      setTimeout(() => alertEl.innerHTML = '', 3000);
+    }
+    
+    // Utility: Get current date (YYYY-MM-DD)
+    function getCurrentDate() {
+      return new Date().toISOString().split('T')[0];
+    }
+    
+    // Utility: Get week number (ISO 8601)
+    function getWeekNumber(date) {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      const yearStart = new Date(d.getFullYear(), 0, 1);
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    }
+    
+    // Utility: Get current quarter
+    function getCurrentQuarter() {
+      const now = new Date();
+      const quarter = Math.floor(now.getMonth() / 3) + 1;
+      return `${now.getFullYear()}-Q${quarter}`;
+    }
+    
+    // Dashboard
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/journal/dashboard');
+        const data = await res.json();
+        
+        // Update stats
+        document.getElementById('dash-streak').textContent = 
+          `${data.habitStreak.completed}/${data.habitStreak.total}`;
+        document.getElementById('dash-week').textContent = data.currentWeek;
+        document.getElementById('dash-date').textContent = 
+          new Date(data.today).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        // Parse today's priority
+        const dayLines = data.dayContent.split('\n');
+        let todayTasks = [];
+        let inPrimary = false;
+        for (const line of dayLines) {
+          if (line.includes('## Primary Task')) inPrimary = true;
+          else if (line.startsWith('##')) inPrimary = false;
+          else if (inPrimary && line.trim().startsWith('- [')) {
+            todayTasks.push(line.trim());
+          }
+        }
+        
+        document.getElementById('dash-today').innerHTML = todayTasks.length
+          ? todayTasks.map(t => `<div class="task-item ${t.includes('[x]') ? 'completed' : ''}">${t}</div>`).join('')
+          : '<div class="empty-state">No tasks for today</div>';
+        
+        // Parse week priority
+        const weekLines = data.weekContent.split('\n');
+        let weekTasks = [];
+        let inWeekPriority = false;
+        for (const line of weekLines) {
+          if (line.includes('## My Priority This Week')) inWeekPriority = true;
+          else if (line.startsWith('##')) inWeekPriority = false;
+          else if (inWeekPriority && line.trim().startsWith('- [')) {
+            weekTasks.push(line.trim());
+          }
+        }
+        
+        document.getElementById('dash-week-tasks').innerHTML = weekTasks.length
+          ? weekTasks.map(t => `<div class="task-item ${t.includes('[x]') ? 'completed' : ''}">${t}</div>`).join('')
+          : '<div class="empty-state">No weekly priority set</div>';
+          
+      } catch (err) {
+        console.error('Dashboard error:', err);
+        document.getElementById('dash-today').innerHTML = 
+          '<div class="empty-state">Error loading dashboard</div>';
+      }
+    }
+    
+    // Daily Tasks
+    function setToday() {
+      document.getElementById('day-date').value = getCurrentDate();
+      loadDay();
+    }
+    
+    async function loadDay() {
+      const date = document.getElementById('day-date').value;
+      if (!date) return;
+      
+      try {
+        const res = await fetch(`/api/journal/day/${date}`);
+        const data = await res.json();
+        document.getElementById('day-content').value = data.content || 
+          `# ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n\n## Primary Task\n*Most important task today.*\n\n- [ ] \n\n**Check if it aligns with an active goal:** [ ]`;
+      } catch (err) {
+        showAlert('day-alert', 'Error loading day: ' + err.message, 'error');
+      }
+    }
+    
+    async function saveDay() {
+      const date = document.getElementById('day-date').value;
+      const content = document.getElementById('day-content').value;
+      
+      try {
+        const res = await fetch(`/api/journal/day/${date}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          showAlert('day-alert', '✅ Saved successfully!');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        showAlert('day-alert', 'Error saving: ' + err.message, 'error');
+      }
+    }
+    
+    // Weekly Planning
+    function setCurrentWeek() {
+      document.getElementById('week-select').value = getWeekNumber(new Date());
+      loadWeek();
+    }
+    
+    async function loadWeek() {
+      const week = document.getElementById('week-select').value;
+      if (!week) return;
+      
+      try {
+        const res = await fetch(`/api/journal/week/${week}`);
+        const data = await res.json();
+        document.getElementById('week-content').value = data.content ||
+          `# Week ${week.split('-W')[1]} Plan\n\n## My Priority This Week\n*What is the one task that, if completed, will advance your goals this week?*\n\n- [ ] \n\n**Check if it aligns with an active goal:** [ ]`;
+      } catch (err) {
+        showAlert('week-alert', 'Error loading week: ' + err.message, 'error');
+      }
+    }
+    
+    async function saveWeek() {
+      const week = document.getElementById('week-select').value;
+      const content = document.getElementById('week-content').value;
+      
+      try {
+        const res = await fetch(`/api/journal/week/${week}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          showAlert('week-alert', '✅ Saved successfully!');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        showAlert('week-alert', 'Error saving: ' + err.message, 'error');
+      }
+    }
+    
+    // Quarterly Goals
+    function setCurrentQuarter() {
+      document.getElementById('quarter-select').value = getCurrentQuarter();
+      loadGoals();
+    }
+    
+    async function loadGoals() {
+      const quarter = document.getElementById('quarter-select').value;
+      if (!quarter) return;
+      
+      try {
+        const res = await fetch(`/api/journal/goals/${quarter}`);
+        const data = await res.json();
+        document.getElementById('goals-content').value = data.content ||
+          `# ${quarter} Goals\n\n## Outcome Goal 1\n**Goal:** [SMART goal statement]\n**Target Date:** [Date within 90 days]\n\n### Action Steps\n- [ ] 1. \n- [ ] 2. \n- [ ] 3. `;
+      } catch (err) {
+        showAlert('goals-alert', 'Error loading goals: ' + err.message, 'error');
+      }
+    }
+    
+    async function saveGoals() {
+      const quarter = document.getElementById('quarter-select').value;
+      const content = document.getElementById('goals-content').value;
+      
+      try {
+        const res = await fetch(`/api/journal/goals/${quarter}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          showAlert('goals-alert', '✅ Saved successfully!');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        showAlert('goals-alert', 'Error saving: ' + err.message, 'error');
+      }
+    }
+    
+    // Habits
+    async function loadHabits() {
+      try {
+        const res = await fetch('/api/journal/habits');
+        const data = await res.json();
+        document.getElementById('habits-content').value = data.content ||
+          '# Habit Tracker 2026\n\n## Current Habits (Q1 2026)\n\n### 1. Habit Name\n**Why:** Reason\n\n**January**\n- [ ] 1  [ ] 2  [ ] 3  [ ] 4  [ ] 5';
+      } catch (err) {
+        showAlert('habits-alert', 'Error loading habits: ' + err.message, 'error');
+      }
+    }
+    
+    async function saveHabits() {
+      const content = document.getElementById('habits-content').value;
+      
+      try {
+        const res = await fetch('/api/journal/habits', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          showAlert('habits-alert', '✅ Saved successfully!');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        showAlert('habits-alert', 'Error saving: ' + err.message, 'error');
+      }
+    }
+    
+    // Weekly Review
+    function setCurrentWeekReview() {
+      document.getElementById('review-week').value = getWeekNumber(new Date());
+      loadReview();
+    }
+    
+    async function loadReview() {
+      const week = document.getElementById('review-week').value;
+      if (!week) return;
+      
+      try {
+        const res = await fetch(`/api/journal/review/${week}`);
+        const data = await res.json();
+        document.getElementById('review-content').value = data.content ||
+          `# Week ${week.split('-W')[1]} Review\n\n## What went well?\n\n\n## What could be improved?\n\n\n## Action items for next week:\n- [ ] 1. \n- [ ] 2. \n- [ ] 3. `;
+      } catch (err) {
+        showAlert('review-alert', 'Error loading review: ' + err.message, 'error');
+      }
+    }
+    
+    async function saveReview() {
+      const week = document.getElementById('review-week').value;
+      const content = document.getElementById('review-content').value;
+      
+      try {
+        const res = await fetch(`/api/journal/review/${week}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          showAlert('review-alert', '✅ Saved successfully!');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        showAlert('review-alert', 'Error saving: ' + err.message, 'error');
+      }
+    }
+    
+    // Initialize
+    loadDashboard();
+  </script>
+</body>
+</html>
